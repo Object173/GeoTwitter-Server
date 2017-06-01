@@ -19,10 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Created by ярослав on 29.04.2017.
- */
-
 @Configuration
 @EnableJpaRepositories("com.object173.geotwitter.server.repository")
 @EnableTransactionManagement

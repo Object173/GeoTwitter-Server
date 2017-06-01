@@ -9,9 +9,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
-/**
- * Created by ярослав on 29.04.2017.
- */
 public class ApplicationInitializer implements WebApplicationInitializer {
 
     private static final String DISPATCHER = "dispatcher";

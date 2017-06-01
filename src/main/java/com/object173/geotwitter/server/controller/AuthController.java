@@ -1,15 +1,12 @@
 package com.object173.geotwitter.server.controller;
 
 import com.object173.geotwitter.server.contract.AuthContract;
-import com.object173.geotwitter.server.contract.ResourcesContract;
 import com.object173.geotwitter.server.contract.UrlContract;
 import com.object173.geotwitter.server.entity.Profile;
 import com.object173.geotwitter.server.entity.User;
 import com.object173.geotwitter.server.json.AuthData;
 import com.object173.geotwitter.server.json.AuthResult;
-import com.object173.geotwitter.server.json.AuthToken;
-import com.object173.geotwitter.server.service.user.UserServiceImpl;
-import com.object173.geotwitter.server.utils.ImageUtils;
+import com.object173.geotwitter.server.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +19,11 @@ import java.io.IOException;
 public final class AuthController {
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @RequestMapping(value = UrlContract.AUTH_REGISTER_PATH, method = RequestMethod.POST)
     @ResponseBody
-    public final AuthResult register(@RequestPart(name = "authData", required = true) AuthData authData,
+    public final AuthResult register(@RequestPart(name = "authData") AuthData authData,
                                      @RequestPart(name = "avatar", required = false) MultipartFile avatar) {
         if (authData == null) {
             return new AuthResult(AuthResult.Result.NULL_POINTER);
@@ -34,6 +31,7 @@ public final class AuthController {
         final String username = authData.getUsername();
         final String login = authData.getLogin();
         final String password = authData.getPassword();
+        final String fcmToken = authData.getFcmToken();
 
         if (username.length() < AuthContract.MIN_USERNAME_LENGTH) {
             return new AuthResult(AuthResult.Result.INCORRECT_USERNAME);
@@ -48,25 +46,26 @@ public final class AuthController {
             return new AuthResult(AuthResult.Result.LOGIN_EXISTS);
         }
 
-        final String hash_key = createHashKey(login);
+        final String hashKey = createHashKey(login);
 
-        String avatarUrl = null;
-        if(avatar != null && !avatar.isEmpty()) {
+        User newUser = new User(login, password, hashKey,
+                new Profile(username, null, null), fcmToken);
+
+        byte[] avatarBytes = null;
+        if(avatar != null) {
             try {
-                avatarUrl = ImageUtils.writeImage(avatar.getBytes(),
-                        ResourcesContract.createAvatarPath(authData.getLogin()));
+                avatarBytes = avatar.getBytes();
             } catch (IOException e) {
-                avatarUrl = null;
+                avatarBytes = null;
             }
         }
-
-        final User newUser =
-                userService.insert(new User(login, password, hash_key, new Profile(username, null, avatarUrl)));
+        newUser = userService.insert(newUser, avatarBytes);
 
         if (newUser == null) {
             return new AuthResult(AuthResult.Result.FAIL);
         }
-        return new AuthResult(AuthResult.Result.SUCCESS, new AuthToken(newUser.getId(), newUser.getHash_key()));
+        userService.setUserFcmToken(newUser.getId(), newUser.getFcmToken());
+        return new AuthResult(newUser);
     }
 
     @RequestMapping(value = UrlContract.AUTH_SIGN_IN_PATH, method = RequestMethod.POST)
@@ -82,7 +81,8 @@ public final class AuthController {
         }
 
         if (user.getPassword().equals(authData.getPassword())) {
-            return new AuthResult(AuthResult.Result.SUCCESS, new AuthToken(user.getId(), user.getHash_key()));
+            userService.setUserFcmToken(user.getId(), authData.getFcmToken());
+            return new AuthResult(user);
         }
         return new AuthResult(AuthResult.Result.WRONG_PASSWORD);
     }

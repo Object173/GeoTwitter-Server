@@ -1,35 +1,40 @@
 package com.object173.geotwitter.server.json;
 
-/**
- * Created by ярослав on 29.04.2017.
- */
+import com.object173.geotwitter.server.contract.UrlContract;
+import com.object173.geotwitter.server.entity.User;
+
 public class AuthResult {
 
-    public enum Result {
-        SUCCESS,
-        FAIL,
-        USER_NOT_FOUND,
-        WRONG_PASSWORD,
-        INCORRECT_USERNAME,
-        INCORRECT_LOGIN,
-        INCORRECT_PASSWORD,
-        LOGIN_EXISTS,
-        NULL_POINTER
-    }
-
     private Result result;
+    private AuthProfile profile;
     private AuthToken token;
-
     public AuthResult() {
     }
 
-    public AuthResult(Result result, AuthToken token) {
+    public AuthResult(final Result result, final AuthProfile profile, final AuthToken token) {
         this.result = result;
+        this.profile = profile;
         this.token = token;
     }
 
     public AuthResult(final Result result) {
-        this(result, null);
+        this(result, null, null);
+    }
+
+    public AuthResult(final User user) {
+        if(user != null) {
+            this.result = Result.SUCCESS;
+            if(user.getProfile() != null) {
+                if(user.getProfile().getAvatar() != null && user.getProfile().getAvatar().getUrl() != null) {
+                    this.profile = new AuthProfile(user.getProfile().getUsername(), user.getProfile().getStatus(),
+                            UrlContract.getAvatarUrl(user.getLogin()));
+                }
+                else {
+                    this.profile = new AuthProfile(user.getProfile().getUsername(), user.getProfile().getStatus());
+                }
+            }
+            this.token = new AuthToken(user.getId(), user.getHashKey());
+        }
     }
 
     public Result getResult() {
@@ -46,5 +51,26 @@ public class AuthResult {
 
     public void setToken(AuthToken token) {
         this.token = token;
+    }
+
+    public AuthProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(AuthProfile profile) {
+        this.profile = profile;
+    }
+
+    public enum Result {
+        SUCCESS,
+        FAIL,
+        USER_NOT_FOUND,
+        WRONG_PASSWORD,
+        INCORRECT_USERNAME,
+        INCORRECT_LOGIN,
+        INCORRECT_PASSWORD,
+        LOGIN_EXISTS,
+        NULL_POINTER,
+        ACCESS_DENIED
     }
 }

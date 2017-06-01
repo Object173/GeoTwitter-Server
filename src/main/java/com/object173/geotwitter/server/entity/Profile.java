@@ -13,22 +13,27 @@ public final class Profile {
     @GenericGenerator(name = "increment", strategy = "increment")
     private long id;
 
-    @Column(name = "username", nullable = false, length = 15)
+    @Column(name = "username", nullable = false, length = 20)
     private String username;
 
-    @Column(name = "status", length = 50)
+    @Column(name = "status", length = 100)
     private String status;
 
-    @Column(name = "avatar_url")
-    private String avatar_url;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "avatar_id")
+    private Image avatar;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "avatar_mini_id")
+    private Image avatarMini;
 
     public Profile() {
     }
 
-    public Profile(final String username, final String status, final String avatar_url) {
+    public Profile(final String username, final String status, final Image avatar) {
         this.username = username;
         this.status = status;
-        this.avatar_url = avatar_url;
+        this.avatar = avatar;
     }
 
     public long getId() {
@@ -55,11 +60,19 @@ public final class Profile {
         this.status = status;
     }
 
-    public String getAvatar_url() {
-        return avatar_url;
+    public Image getAvatar() {
+        return avatar;
     }
 
-    public void setAvatar_url(String avatar_url) {
-        this.avatar_url = avatar_url;
+    public void setAvatar(Image avatar) {
+        this.avatar = avatar;
+    }
+
+    public Image getAvatarMini() {
+        return avatarMini;
+    }
+
+    public void setAvatarMini(Image avatarMini) {
+        this.avatarMini = avatarMini;
     }
 }

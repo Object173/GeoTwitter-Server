@@ -1,15 +1,11 @@
 package com.object173.geotwitter.server.json;
 
-/**
- * Created by Object173
- * on 30.04.2017.
- */
-
 public final class AuthData {
 
     private String username;
     private String login;
     private String password;
+    private String fcmToken;
 
     public AuthData() {
     }
@@ -36,5 +32,13 @@ public final class AuthData {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }

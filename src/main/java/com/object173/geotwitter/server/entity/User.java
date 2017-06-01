@@ -4,10 +4,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
-/**
- * Created by ярослав on 29.04.2017.
- */
-
 @Entity
 @Table(name = "users")
 public class User {
@@ -20,24 +16,32 @@ public class User {
     @Column(name = "login", nullable = false, length = 15, unique = true)
     private String login;
 
-    @Column(name = "password", length = 100, nullable = false)
+    @Column(name = "password", length = 25, nullable = false)
     private String password;
 
     @Column(name = "hash_key", nullable = false)
-    private String hash_key;
+    private String hashKey;
+
+    @Column(name = "fcm_token")
+    private String fcmToken;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn(name = "profile_id")
+    @JoinColumn(name = "profile_id", nullable = false)
     private Profile profile;
 
     public User() {
     }
 
-    public User(final String login, final String password, final String hash_key, final Profile profile) {
+    public User(String login, String password, String hashKey, Profile profile, String fcmToken) {
         this.login = login;
         this.password = password;
-        this.hash_key = hash_key;
+        this.hashKey = hashKey;
+        this.fcmToken = fcmToken;
         this.profile = profile;
+    }
+
+    public User(final String login, final String password, final String hashKey, final Profile profile) {
+        this(login, password, hashKey, profile, null);
     }
 
     public long getId() {
@@ -64,12 +68,12 @@ public class User {
         this.password = password;
     }
 
-    public String getHash_key() {
-        return hash_key;
+    public String getHashKey() {
+        return hashKey;
     }
 
-    public void setHash_key(String hash_key) {
-        this.hash_key = hash_key;
+    public void setHashKey(String hashKey) {
+        this.hashKey = hashKey;
     }
 
     public Profile getProfile() {
@@ -78,5 +82,13 @@ public class User {
 
     public void setProfile(Profile profile) {
         this.profile = profile;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }
